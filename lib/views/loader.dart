@@ -1,9 +1,8 @@
+import 'package:LastHourEarthquakes/network/fetch_1wk_earthquakes.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 
-import './earthquakes.dart';
-import '../../network/fetch_earthquakes.dart';
-import '../network/features/feature_collection_dto.dart';
+import '../../network/fetch_1hr_earthquakes.dart';
+import 'tabs.dart';
 
 class Loader extends StatelessWidget {
   const Loader({super.key});
@@ -12,24 +11,19 @@ class Loader extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       body: FutureBuilder(
-        future: Future.wait([fetchEarthquakes(http.Client())]),
+        future: Future.wait([fetch1hrEarthquakes(), fetch1wkEarthquakes()]),
         builder: (context, snapshot) {
           if (snapshot.hasError) {
             return Center(
               child: Text('Error loading Earthquakes:\n\n${snapshot.error}'),
             );
           } else if (snapshot.hasData) {
-            var fetched = snapshot.data![0].features;
-            return RefreshIndicator(
-                onRefresh: () {
-                  final Future<FeatureCollectionDto> future =
-                      fetchEarthquakes(http.Client());
-                  future.then((refreshed) => fetched = refreshed.features);
-                  return future;
-                },
-                child: Earthquakes(
-                  features: fetched,
-                ));
+            return Tabs(
+              hourly_all: snapshot.data![0].features,
+              hourlyFetcher: fetch1hrEarthquakes,
+              weekly_45mag: snapshot.data![1].features,
+              weeklyFetcher: fetch1wkEarthquakes,
+            );
           } else {
             return const Center(
               child: CircularProgressIndicator(),
