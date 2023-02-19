@@ -79,7 +79,7 @@ class _EarthquakesState extends State<Earthquakes>
               final subtitle =
                   '${quake.mag.toStringAsFixed(2)} ${quake.magType}'
                   ' ${quake.type}'
-                  ', ${feature.geometry.coordinates[2].toStringAsFixed(2)} km deep';
+                  ', ${feature.geometry.depth.toStringAsFixed(2)} km deep';
 
               final time = DateTime.fromMillisecondsSinceEpoch(quake.time);
               // DateFormat('EEE, d MMMM yyyy').format(time)
