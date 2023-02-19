@@ -1,23 +1,43 @@
-import 'package:LastHourEarthquakes/network/dto/feature_collection_dto.dart';
 import 'package:flutter/material.dart';
 
-import '../network/dto/feature_dto.dart';
+import '../bloc/features_bloc.dart';
+import '../network/fetch_1hr_earthquakes.dart';
+import '../network/fetch_1wk_earthquakes.dart';
 import 'earthquakes.dart';
 
-class Tabs extends StatelessWidget {
-  final List<FeatureDto> hourly_all;
-  final Future<FeatureCollectionDto> Function() hourlyFetcher;
-
-  final List<FeatureDto> weekly_45mag;
-  final Future<FeatureCollectionDto> Function() weeklyFetcher;
-
-  Tabs({
-    required this.hourly_all,
-    required this.hourlyFetcher,
-    required this.weekly_45mag,
-    required this.weeklyFetcher,
+class Tabs extends StatefulWidget {
+  const Tabs({
     super.key,
   });
+
+  @override
+  State<Tabs> createState() => _TabsState();
+}
+
+class _TabsState extends State<Tabs> {
+  late FeaturesBLoC firstTabBloC;
+  late FeaturesBLoC secondTabBloC;
+
+  int rerenderCurrentSnapLength = 0;
+
+  @override
+  void initState() {
+    super.initState();
+
+    firstTabBloC = FeaturesBLoC(fetch1hrEarthquakes, '1hrEarthquakes');
+    firstTabBloC.item$.listen((event) {
+      setState(() {
+        rerenderCurrentSnapLength = rerenderCurrentSnapLength + 1;
+      });
+    });
+
+    secondTabBloC = FeaturesBLoC(fetch1wkEarthquakes, '1wkEarthquakes');
+    secondTabBloC.item$.listen((event) {
+      setState(() {
+        rerenderCurrentSnapLength = rerenderCurrentSnapLength + 1;
+      });
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -32,11 +52,13 @@ class Tabs extends StatelessWidget {
             tabs: [
               horizontalTab(
                 // icon: const Icon(Icons.supervised_user_circle),
-                text: '${hourly_all.length} Past Hour (all)',
+                text: '${firstTabBloC.currentSnapLength ?? '??'}'
+                    '/Hour (all)',
               ),
               horizontalTab(
                 // icon: const Icon(Icons.checklist),
-                text: '${weekly_45mag.length} Past Week (> 4.5mag)',
+                text: '${secondTabBloC.currentSnapLength ?? '??'}'
+                    '/Week (> 4.5mag)',
               ),
             ],
           ),
@@ -44,12 +66,10 @@ class Tabs extends StatelessWidget {
         body: TabBarView(
           children: [
             Earthquakes(
-              initial: hourly_all,
-              fetchSlice: hourlyFetcher,
+              featuresBLoC: firstTabBloC,
             ),
             Earthquakes(
-              initial: weekly_45mag,
-              fetchSlice: weeklyFetcher,
+              featuresBLoC: secondTabBloC,
             ),
           ],
         ),

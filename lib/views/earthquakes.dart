@@ -1,18 +1,16 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 
-import '../network/dto/feature_collection_dto.dart';
+import '../bloc/features_bloc.dart';
 import '../network/dto/feature_dto.dart';
 import '../network/dto/properties_dto.dart';
 
 class Earthquakes extends StatefulWidget {
-  final List<FeatureDto> initial;
-  final Future<FeatureCollectionDto> Function() fetchSlice;
+  final FeaturesBLoC featuresBLoC;
+  final List<FeatureDto>? initial;
 
   const Earthquakes({
-    required this.initial,
-    required this.fetchSlice,
+    required this.featuresBLoC,
+    this.initial,
     super.key,
   });
 
@@ -34,73 +32,71 @@ class _EarthquakesState extends State<Earthquakes>
     });
   }
 
-  List<FeatureDto>? fetched;
-
-  Future<FeatureCollectionDto> refresh() {
-    final Future<FeatureCollectionDto> future = widget.fetchSlice();
-    future.then((refreshed) {
-      setState(() {
-        fetched = refreshed.features;
-      });
-      rescheduleAutoRefresh();
-    });
-    return future;
-  }
-
-  Timer? autoRefreshTimer;
-  rescheduleAutoRefresh() {
-    // https://stackoverflow.com/questions/51791501/how-to-debounce-textfield-onchange-in-dart
-    if (autoRefreshTimer?.isActive ?? false) autoRefreshTimer?.cancel();
-    autoRefreshTimer = Timer(const Duration(seconds: 10), () {
-      refresh();
-    });
+  @override
+  void initState() {
+    super.initState();
+    widget.featuresBLoC.fetch();
   }
 
   @override
   Widget build(BuildContext context) {
-    final quakes = fetched ?? widget.initial;
-
     return Scaffold(
-      // appBar: AppBar(
-      //   centerTitle: true,
-      //   title: const Text('Last Hour Earthquakes'),
-      // ),
       body: RefreshIndicator(
-          onRefresh: refresh,
-          child: ListView.separated(
-            itemCount: quakes.length,
-            separatorBuilder: (BuildContext context, int index) =>
-                const Divider(height: 1),
-            itemBuilder: (context, index) {
-              final feature = quakes[index];
-              final quake = feature.properties;
-              final mag = quake.mag.toStringAsFixed(1);
+          onRefresh: widget.featuresBLoC.refresher.refresh,
+          child: StreamBuilder(
+              stream: widget.featuresBLoC.item$,
+              builder: (BuildContext context,
+                  AsyncSnapshot<List<FeatureDto>> snapshot) {
+                if (snapshot.hasError) {
+                  return Text('There was an error : ${snapshot.error}');
+                }
 
-              final subtitle =
-                  '${quake.mag.toStringAsFixed(2)} ${quake.magType}'
-                  ' ${quake.type}'
-                  ', ${feature.geometry.depth.toStringAsFixed(2)} km deep';
+                switch (snapshot.connectionState) {
+                  case ConnectionState.none:
+                  case ConnectionState.waiting:
+                    return const Center(child: CircularProgressIndicator());
 
-              final time = DateTime.fromMillisecondsSinceEpoch(quake.time);
-              // DateFormat('EEE, d MMMM yyyy').format(time)
-              final ago = timeAgoSinceDate(time);
+                  case ConnectionState.active:
+                  case ConnectionState.done:
+                    final List<FeatureDto> quakes = snapshot.data ?? [];
+                    return ListView.separated(
+                      itemCount: quakes.length,
+                      itemBuilder: (context, index) {
+                        final feature = quakes[index];
+                        final quake = feature.properties;
+                        final mag = quake.mag.toStringAsFixed(1);
 
-              return ListTile(
-                key: Key('feature_${feature.id}'),
-                leading: CircleAvatar(
-                  foregroundColor: Colors.white,
-                  backgroundColor: heatMap(quake.mag).withOpacity(0.65),
-                  child: Text(mag),
-                ),
-                title: Text(quake.place),
-                subtitle: Text(subtitle),
-                selectedTileColor: Colors.lightBlueAccent,
-                onTap: () => _toggleSelected(quake),
-                selected: _itemsSelected.containsKey(quake.ids),
-                trailing: Text(ago),
-              );
-            },
-          )),
+                        final subtitle =
+                            '${quake.mag.toStringAsFixed(2)} ${quake.magType}'
+                            ' ${quake.type}'
+                            ', ${feature.geometry.depth.toStringAsFixed(2)} km deep';
+
+                        final time =
+                            DateTime.fromMillisecondsSinceEpoch(quake.time);
+                        // DateFormat('EEE, d MMMM yyyy').format(time)
+                        final ago = timeAgoSinceDate(time);
+
+                        return ListTile(
+                          key: Key('feature_${feature.id}'),
+                          leading: CircleAvatar(
+                            foregroundColor: Colors.white,
+                            backgroundColor:
+                                heatMap(quake.mag).withOpacity(0.65),
+                            child: Text(mag),
+                          ),
+                          title: Text(quake.place),
+                          subtitle: Text(subtitle),
+                          selectedTileColor: Colors.lightBlueAccent,
+                          onTap: () => _toggleSelected(quake),
+                          selected: _itemsSelected.containsKey(quake.ids),
+                          trailing: Text(ago),
+                        );
+                      },
+                      separatorBuilder: (BuildContext context, int index) =>
+                          const Divider(height: 1),
+                    );
+                }
+              })),
     );
   }
 

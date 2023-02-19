@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'views/loader.dart';
+import 'views/tabs.dart';
 
 void main() {
   runApp(const MyApp());
@@ -18,7 +18,7 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.blueGrey,
         highlightColor: Colors.blue,
       ),
-      home: const Loader(),
+      home: const Tabs(),
     );
   }
 }

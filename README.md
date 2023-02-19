@@ -1,5 +1,10 @@
 # LastHourEarthquakes
 
+Bloc sample taken from:
+
+https://dev.to/offlineprogrammer/flutter-getting-started-with-the-bloc-pattern-streams-http-request-response-1mo3
+
+
 Json fields:
 https://earthquake.usgs.gov/earthquakes/feed/v1.0/geojson.php
 
