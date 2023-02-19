@@ -40,6 +40,8 @@ dependencies:
   json_annotation: ^4.8.0
   build_runner: ^2.3.3
   json_serializable: ^6.6.1
+  bloc_rest_api: ^1.0.0-nullsafety.0
+  flutter_bloc: ^7.3.3
 
 dev_dependencies:
   flutter_test:
