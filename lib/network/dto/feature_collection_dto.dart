@@ -19,13 +19,15 @@ part 'feature_collection_dto.g.dart';
 class FeatureCollectionDto {
   final String type;
   final MetadataDto metadata;
-  final List<double> bbox;
+  final List<double>? bbox;
   final List<FeatureDto> features;
+
+  // https://earthquake.usgs.gov/earthquakes/feed/v1.0/geojson.php
 
   const FeatureCollectionDto({
     required this.type,
     required this.metadata,
-    required this.bbox,
+    this.bbox,
     required this.features,
   });
 

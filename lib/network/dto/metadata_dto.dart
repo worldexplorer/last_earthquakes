@@ -21,6 +21,8 @@ class MetadataDto {
   final int count;
   final int status;
 
+  // https://earthquake.usgs.gov/earthquakes/feed/v1.0/geojson.php
+
   const MetadataDto({
     required this.generated,
     required this.url,

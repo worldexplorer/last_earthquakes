@@ -22,6 +22,8 @@ class FeatureDto {
   final PropertiesDto properties;
   final GeometryDto geometry;
 
+  // https://earthquake.usgs.gov/earthquakes/feed/v1.0/geojson.php
+
   const FeatureDto({
     required this.id,
     required this.type,

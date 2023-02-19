@@ -41,6 +41,8 @@ class PropertiesDto {
   final String type;
   final String title;
 
+  // https://earthquake.usgs.gov/earthquakes/feed/v1.0/geojson.php
+
   const PropertiesDto({
     required this.mag,
     required this.place,

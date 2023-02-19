@@ -4,8 +4,6 @@
 
 import 'package:json_annotation/json_annotation.dart';
 
-import './coordinate_dto.dart';
-
 part 'geometry_dto.g.dart';
 
 @JsonSerializable(
@@ -17,8 +15,13 @@ part 'geometry_dto.g.dart';
     includeIfNull: true)
 class GeometryDto {
   final String type;
-  // final List<CoordinateDto> coordinates;
   final List<double> coordinates;
+
+  get latitude => coordinates[0];
+  get longitude => coordinates[1];
+  get depth => coordinates[2];
+
+  // https://earthquake.usgs.gov/earthquakes/feed/v1.0/geojson.php
 
   const GeometryDto({
     required this.type,
@@ -27,5 +30,6 @@ class GeometryDto {
 
   factory GeometryDto.fromJson(Map<String, dynamic> json) =>
       _$GeometryDtoFromJson(json);
+
   Map<String, dynamic> toJson() => _$GeometryDtoToJson(this);
 }
