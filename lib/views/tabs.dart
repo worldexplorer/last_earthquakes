@@ -4,6 +4,7 @@ import '../bloc/features_bloc.dart';
 import '../network/fetch_1hr_earthquakes.dart';
 import '../network/fetch_1wk_earthquakes.dart';
 import 'earthquakes.dart';
+import 'tab_label.dart';
 
 class Tabs extends StatefulWidget {
   const Tabs({
@@ -18,25 +19,11 @@ class _TabsState extends State<Tabs> {
   late FeaturesBLoC firstTabBloC;
   late FeaturesBLoC secondTabBloC;
 
-  int rerenderCurrentSnapLength = 0;
-
   @override
   void initState() {
     super.initState();
-
     firstTabBloC = FeaturesBLoC(fetch1hrEarthquakes, '1hrEarthquakes');
-    firstTabBloC.item$.listen((event) {
-      setState(() {
-        rerenderCurrentSnapLength = rerenderCurrentSnapLength + 1;
-      });
-    });
-
     secondTabBloC = FeaturesBLoC(fetch1wkEarthquakes, '1wkEarthquakes');
-    secondTabBloC.item$.listen((event) {
-      setState(() {
-        rerenderCurrentSnapLength = rerenderCurrentSnapLength + 1;
-      });
-    });
   }
 
   @override
@@ -50,15 +37,15 @@ class _TabsState extends State<Tabs> {
           title: const Text('Last Earthquakes'),
           bottom: TabBar(
             tabs: [
-              horizontalTab(
+              TabLabel(
                 // icon: const Icon(Icons.supervised_user_circle),
-                text: '${firstTabBloC.currentSnapLength ?? '??'}'
-                    '/Hour (all)',
+                text: '#currentSnapLength# / Hour (all)',
+                featuresBLoC: firstTabBloC,
               ),
-              horizontalTab(
+              TabLabel(
                 // icon: const Icon(Icons.checklist),
-                text: '${secondTabBloC.currentSnapLength ?? '??'}'
-                    '/Week (> 4.5mag)',
+                text: '#currentSnapLength# / Week (> 4.5mag)',
+                featuresBLoC: secondTabBloC,
               ),
             ],
           ),
@@ -76,16 +63,4 @@ class _TabsState extends State<Tabs> {
       ),
     );
   }
-}
-
-horizontalTab({Icon? icon, required String text}) {
-  return SizedBox(
-      height: 45,
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          ...(icon != null) ? [icon, const SizedBox(width: 12)] : [],
-          Text(text)
-        ],
-      ));
 }
